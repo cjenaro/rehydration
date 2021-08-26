@@ -17,7 +17,7 @@ async function addPlayer(data: FieldValues) {
 
 export default function Player() {
   const { control, handleSubmit } = useForm();
-  const { mutate } = useMutation(addPlayer);
+  const { mutate, isLoading } = useMutation(addPlayer);
 
   async function submit(data: FieldValues) {
     mutate(data);
@@ -33,7 +33,12 @@ export default function Player() {
           <Input control={control} name="name" placeholder="Forki" />
         </Stack>
       </FormControl>
-      <Button onPress={handleSubmit(submit)} colorScheme="pink" mt="4">
+      <Button
+        isLoading={isLoading}
+        onPress={handleSubmit(submit)}
+        colorScheme="pink"
+        mt="4"
+      >
         Agregar
       </Button>
     </View>
