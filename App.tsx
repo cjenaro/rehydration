@@ -89,8 +89,8 @@ export default function App() {
         <QueryClientProvider client={queryClient}>
           <NavStack.Navigator initialRouteName="Home">
             <NavStack.Screen name="Home" component={Home} />
-            <NavStack.Screen name="Search" component={Search} />
-            <NavStack.Screen name="EditPlayer" component={EditPlayer} />
+            <NavStack.Screen name="Jugadores" component={Search} />
+            <NavStack.Screen name="Jugador" component={EditPlayer} />
           </NavStack.Navigator>
         </QueryClientProvider>
       </NavigationContainer>

@@ -12,6 +12,7 @@ import {
   View,
   VStack,
   Input,
+  Spinner,
 } from "native-base";
 import * as React from "react";
 import { useQuery } from "react-query";
@@ -24,7 +25,7 @@ async function getPlayers() {
 }
 
 export default function Search({ navigation }: { navigation: any }) {
-  const { data: players } = useQuery(["PLAYERS"], getPlayers, {
+  const { data: players, isLoading } = useQuery(["PLAYERS"], getPlayers, {
     onSuccess: () => {
       setFilteredPlayers(players);
     },
@@ -51,31 +52,35 @@ export default function Search({ navigation }: { navigation: any }) {
     <Layout>
       <Heading size="md">Buscar un jugador.</Heading>
       <Input mt="4" onChangeText={handleFilter} placeholder="Buscar..." />
-      <ScrollView mt="4">
-        <VStack>
-          {filteredPlayers?.map((player) => (
-            <Pressable
-              key={player.id}
-              onPress={navigate("EditPlayer", player)}
-              mb="1"
-            >
-              <Flex
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                w="100%"
-                py="1"
-                borderRadius="md"
-                position="relative"
-                bg="gray.700"
+      {!isLoading ? (
+        <ScrollView mt="4" mb="70px">
+          <VStack>
+            {filteredPlayers?.map((player) => (
+              <Pressable
+                key={player.id}
+                onPress={navigate("Jugador", player)}
+                mb="1"
               >
-                <Text pl="3">{player.name}</Text>
-                <ChevronRightIcon position="relative" bottom="-3px" />
-              </Flex>
-            </Pressable>
-          ))}
-        </VStack>
-      </ScrollView>
+                <Flex
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  w="100%"
+                  py="1"
+                  borderRadius="md"
+                  position="relative"
+                  bg="gray.700"
+                >
+                  <Text pl="3">{player.name}</Text>
+                  <ChevronRightIcon position="relative" bottom="-3px" />
+                </Flex>
+              </Pressable>
+            ))}
+          </VStack>
+        </ScrollView>
+      ) : (
+        <Spinner />
+      )}
     </Layout>
   );
 }

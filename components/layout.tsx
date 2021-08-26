@@ -23,7 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <Button.Group space={4}>
         <Button flexGrow={1} colorScheme="pink" onPress={navigate("Home")}>Agregar jugador</Button>
-        <Button flexGrow={1} colorScheme="pink" variant="outline" onPress={navigate("Search")}>Buscar jugador</Button>
+        <Button flexGrow={1} colorScheme="pink" variant="outline" onPress={navigate("Jugadores")}>Buscar jugador</Button>
       </Button.Group>
     </View>
   );
