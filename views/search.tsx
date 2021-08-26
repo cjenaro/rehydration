@@ -11,6 +11,7 @@ import {
   Text,
   View,
   VStack,
+  Input,
 } from "native-base";
 import * as React from "react";
 import { useQuery } from "react-query";
@@ -23,20 +24,41 @@ async function getPlayers() {
 }
 
 export default function Search({ navigation }: { navigation: any }) {
-  const { data: players, isLoading } = useQuery(["PLAYERS"], getPlayers);
+  const { data: players } = useQuery(["PLAYERS"], getPlayers, {
+    onSuccess: () => {
+      setFilteredPlayers(players);
+    },
+  });
+  const [filteredPlayers, setFilteredPlayers] = React.useState<
+    any[] | undefined
+  >([]);
 
   const navigate = (somewhere: string, player: object) => () =>
     navigation.navigate(somewhere, {
       player,
     });
 
+  function handleFilter(query: string) {
+    if (!players) return;
+    const filtered = players.filter(
+      (player) => player.name.toLowerCase().indexOf(query.toLowerCase()) !== -1
+    );
+
+    setFilteredPlayers(filtered);
+  }
+
   return (
     <Layout>
       <Heading size="md">Buscar un jugador.</Heading>
+      <Input mt="4" onChangeText={handleFilter} placeholder="Buscar..." />
       <ScrollView mt="4">
         <VStack>
-          {players?.map((player) => (
-            <Pressable key={player.id} onPress={navigate("EditPlayer", player)} mb="1">
+          {filteredPlayers?.map((player) => (
+            <Pressable
+              key={player.id}
+              onPress={navigate("EditPlayer", player)}
+              mb="1"
+            >
               <Flex
                 direction="row"
                 justifyContent="space-between"

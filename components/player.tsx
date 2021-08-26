@@ -3,7 +3,7 @@ import { Button, FormControl, Heading, Stack, Text } from "native-base";
 import { FieldValues, useForm } from "react-hook-form";
 import { View } from "react-native";
 import Input from "./input";
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import db, { sql } from "../database";
 
 async function addPlayer(data: FieldValues) {
@@ -16,8 +16,13 @@ async function addPlayer(data: FieldValues) {
 }
 
 export default function Player() {
+  const queryClient = useQueryClient();
   const { control, handleSubmit } = useForm();
-  const { mutate, isLoading } = useMutation(addPlayer);
+  const { mutate, isLoading } = useMutation(addPlayer, {
+    onSuccess: () => {
+      queryClient.refetchQueries("PLAYERS");
+    },
+  });
 
   async function submit(data: FieldValues) {
     mutate(data);
