@@ -1,21 +1,137 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React from "react";
+import {
+  NativeBaseProvider,
+  Container,
+  Heading,
+  Stack,
+  Text,
+  Button,
+  StorageManager as ColorModeManager,
+  extendTheme,
+  ColorMode,
+  useColorMode,
+  View,
+  ITheme,
+  useColorModeValue,
+} from "native-base";
+import db, { sql } from "./database";
+import { useQuery, QueryClient, QueryClientProvider } from "react-query";
+import { useForm } from "react-hook-form";
+import Input from "./components/input";
+import { backgroundColor } from "styled-system";
+import Header from "./components/header";
+import Player from "./components/player";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import Home from "./views/home";
+import Search from "./views/search";
+import EditPlayer from "./views/edit-player";
+
+const queryClient = new QueryClient();
+
+db.tx(function* (tx) {
+  yield tx.query(sql`
+  CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, name TEXT);
+  `);
+  yield tx.query(sql`
+  CREATE TABLE IF NOT EXISTS color_mode (id INTEGER PRIMARY KEY, mode TEXT);
+  `);
+  yield tx.query(sql`
+  CREATE TABLE IF NOT EXISTS players (id INTEGER PRIMARY KEY, name TEXT);
+  `);
+  yield tx.query(sql`
+  CREATE TABLE IF NOT EXISTS player_weight (
+    id INTEGER PRIMARY KEY, 
+    date DATE,
+    weight_before INTEGER, 
+    weight_after INTEGER, 
+    player_id INTEGER NOT NULL,
+    FOREIGN KEY(player_id) REFERENCES players(id)
+    );
+  `);
+});
+
+const config = {
+  useSystemColorMode: true,
+  initialColorMode: "dark",
+};
+
+const customTheme = extendTheme({ config });
+
+const colorModeManager: ColorModeManager = {
+  get: async () => {
+    try {
+      const [{ mode }] = await db.query(
+        sql`SELECT mode FROM color_mode WHERE id = 1`
+      );
+      return mode;
+    } catch (e) {
+      return "dark";
+    }
+  },
+  set: async (value: ColorMode) => {
+    try {
+      await db.query(
+        sql`INSERT OR REPLACE INTO color_mode (id, mode) VALUES (1, ${value})`
+      );
+    } catch (e) {
+      console.log(e);
+    }
+  },
+};
+
+const NavStack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NativeBaseProvider theme={customTheme} colorModeManager={colorModeManager}>
+      <NavigationContainer>
+        <QueryClientProvider client={queryClient}>
+          <NavStack.Navigator initialRouteName="Home">
+            <NavStack.Screen name="Home" component={Home} />
+            <NavStack.Screen name="Search" component={Search} />
+            <NavStack.Screen name="EditPlayer" component={EditPlayer} />
+          </NavStack.Navigator>
+        </QueryClientProvider>
+      </NavigationContainer>
+    </NativeBaseProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+function Tests() {
+  const { control, handleSubmit } = useForm();
+  const { isLoading, data, isError, refetch } = useQuery(["items"], getItems);
+  async function submit(data: any) {
+    if (!data.name) return;
+
+    await db.query(
+      sql`
+        INSERT INTO test (name)
+        VALUES (${data.name})
+      `
+    );
+
+    refetch();
+  }
+
+  async function getItems() {
+    const items = (await db.query(sql`SELECT * FROM test`)) || [];
+    return items;
+  }
+
+  return (
+    <Stack>
+      <Input name="name" placeholder="Forki" control={control} />
+      <Button colorScheme="red" onTouchEnd={handleSubmit(submit)}>
+        send
+      </Button>
+
+      {data?.map((item) => (
+        <Text key={item.id}>{item.name}</Text>
+      ))}
+
+      {isLoading ? <Text>Loading...</Text> : null}
+      {isError ? <Text>Error</Text> : null}
+    </Stack>
+  );
+}
