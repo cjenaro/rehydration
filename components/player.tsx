@@ -5,22 +5,35 @@ import { View } from "react-native";
 import Input from "./input";
 import { useMutation, useQueryClient } from "react-query";
 import db, { sql } from "../database";
+import { useNavigation } from "@react-navigation/core";
 
 async function addPlayer(data: FieldValues) {
   await db.query(
     sql`
           INSERT INTO players (name)
-          VALUES (${data.name})
+          VALUES (${data.name});
         `
   );
+  const [{ id }] = await db.query(
+    sql`
+          SELECT last_insert_rowid() as id;
+        `
+  );
+
+  return id;
 }
 
 export default function Player() {
   const queryClient = useQueryClient();
+  const navigation: any = useNavigation();
   const { control, handleSubmit } = useForm();
   const { mutate, isLoading } = useMutation(addPlayer, {
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.refetchQueries("PLAYERS");
+      const player = { name: variables.name, id: data };
+      navigation.navigate("Jugador", {
+        player,
+      });
     },
   });
 

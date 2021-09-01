@@ -79,7 +79,7 @@ export default function Search({ navigation }: { navigation: any }) {
           </VStack>
         </ScrollView>
       ) : (
-        <Spinner />
+        <Spinner my="8" />
       )}
     </Layout>
   );
