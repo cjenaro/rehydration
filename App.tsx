@@ -1,26 +1,12 @@
 import React from "react";
 import {
   NativeBaseProvider,
-  Container,
-  Heading,
-  Stack,
-  Text,
-  Button,
   StorageManager as ColorModeManager,
   extendTheme,
   ColorMode,
-  useColorMode,
-  View,
-  ITheme,
-  useColorModeValue,
 } from "native-base";
 import db, { sql } from "./database";
-import { useQuery, QueryClient, QueryClientProvider } from "react-query";
-import { useForm } from "react-hook-form";
-import Input from "./components/input";
-import { backgroundColor } from "styled-system";
-import Header from "./components/header";
-import Player from "./components/player";
+import { QueryClient, QueryClientProvider } from "react-query";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Home from "./views/home";
@@ -87,7 +73,18 @@ export default function App() {
     <NativeBaseProvider theme={customTheme} colorModeManager={colorModeManager}>
       <NavigationContainer>
         <QueryClientProvider client={queryClient}>
-          <NavStack.Navigator initialRouteName="Home">
+          <NavStack.Navigator
+            initialRouteName="Home"
+            screenOptions={{
+              headerStyle: {
+                backgroundColor: "#010",
+              },
+              headerTintColor: "#fff",
+              headerTitleStyle: {
+                color: "#fff",
+              },
+            }}
+          >
             <NavStack.Screen name="Home" component={Home} />
             <NavStack.Screen name="Jugadores" component={Search} />
             <NavStack.Screen name="Jugador" component={EditPlayer} />
