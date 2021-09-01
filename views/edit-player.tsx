@@ -1,8 +1,8 @@
 import { sql } from "@databases/websql-core";
-import { Button, FormControl, Heading, Stack, Text } from "native-base";
+import { Button, FormControl, Heading, HStack, Stack, Text } from "native-base";
 import * as React from "react";
 import { FieldValues, useForm } from "react-hook-form";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import Input from "../components/input";
 import Layout from "../components/layout";
 import db from "../database";
@@ -41,9 +41,19 @@ function editPlayersWeight(playerId: number, isUpdate: boolean) {
   };
 }
 
+function deletePlayer(id: number) {
+  return async () => {
+    db.query(sql`
+      DELETE FROM players WHERE id = ${id}
+    `);
+  };
+}
+
 export default function EditPlayer({
   route,
+  navigation,
 }: {
+  navigation: any;
   route: {
     params: {
       player: {
@@ -53,6 +63,7 @@ export default function EditPlayer({
     };
   };
 }) {
+  const queryClient = useQueryClient();
   const { handleSubmit, control, setValue } = useForm();
   const {
     data: weights,
@@ -76,13 +87,39 @@ export default function EditPlayer({
     }
   );
 
+  const { mutate: deleteMutation, isLoading: deleteLoading } = useMutation(
+    deletePlayer(route.params.player.id),
+    {
+      onSuccess: () => {
+        queryClient.refetchQueries("PLAYERS");
+        navigation.pop();
+      },
+    }
+  );
+
   function submit(data: FieldValues) {
     mutate(data);
   }
 
+  function handleDelete() {
+    deleteMutation();
+  }
+
   return (
     <Layout>
-      <Heading>{route.params.player.name}</Heading>
+      <HStack w="100%" alignItems="center" justifyContent="space-between">
+        <Heading>{route.params.player.name}</Heading>
+        <Button
+          onPress={handleDelete}
+          colorScheme="pink"
+          variant="outline"
+          isLoading={deleteLoading}
+          mt="2"
+          size="sm"
+        >
+          Eliminar
+        </Button>
+      </HStack>
 
       <FormControl>
         <Stack my={2}>
